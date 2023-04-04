@@ -5,12 +5,12 @@
 - [java-faker: A Guide to Generating Fake Data in Java](#java-faker-a-guide-to-generating-fake-data-in-java)
   - [Overview](#overview)
   - [Getting Started](#getting-started)
+  - [Working with Custom Classes](#working-with-custom-classes)
   - [Generating Basic Data Types](#generating-basic-data-types)
   - [Customizing Options](#customizing-options)
   - [Generating Enums](#generating-enums)
   - [Generating Nullable Data](#generating-nullable-data)
   - [Working with Collections](#working-with-collections)
-  - [Working with Custom Classes](#working-with-custom-classes)
   - [Conclusion](#conclusion)
 
 ## Overview
@@ -20,6 +20,40 @@
 ## Getting Started
 
 To get started with `java-faker`, you need to import it into your project. In this guide, we'll be using the `Java` version of the library, but you can find similar functionality in other programming languages.
+
+## Working with Custom Classes
+
+`java-faker` can generate random data for custom classes using the `@JFaker` annotation or not. You can annotate each field in your class with the `@JFaker` annotation to specify how the random data should be generated. Here's an example of a custom class with various fields:
+
+```java
+public static class SimpleClass {
+    @JFaker("a")
+    public Integer a;
+    public Long b;
+    public Double c;
+    public Float d;
+    public Boolean e;
+    public String f;
+}
+```
+
+To generate an instance of this class with random data, you can call the `Faker.fakeData()` method:
+
+```java
+SimpleClass simpleClass = new SimpleClass();
+Faker.fakeData(simpleClass);
+```
+
+You can also customize the behavior of the `java-faker` library when generating data for custom classes by passing an Options object to the `Faker.fakeData()` method:
+
+```java
+Options options = new Options().withFieldProvider("a", field -> 42);
+
+SimpleClass simpleClass = new SimpleClass();
+Faker.fakeData(simpleClass, options);
+```
+
+In this example, the `a` field of the `SimpleClass` will always be set to `42`.
 
 ## Generating Basic Data Types
 
@@ -92,45 +126,6 @@ Similarly, you can generate maps with random keys and values:
 Options ops = new Options().withRandomMinArraySize(3).withRandomMaxArraySize(10);
 Map<String, Integer> randomMap = Faker.createMap(String.class, Integer.class, ops);
 ```
-
-## Working with Custom Classes
-
-`java-faker` can generate random data for custom classes using the `@JFaker` annotation. You can annotate each field in your class with the `@JFaker` annotation to specify how the random data should be generated. Here's an example of a custom class with various fields:
-
-```java
-public static class SimpleClass {
-    @JFaker("a")
-    public Integer a;
-    @JFaker("b")
-    public Long b;
-    @JFaker("c")
-    public Double c;
-    @JFaker("d")
-    public Float d;
-    @JFaker("e")
-    public Boolean e;
-    @JFaker("f")
-    public String f;
-}
-```
-
-To generate an instance of this class with random data, you can call the `Faker.fakeData()` method:
-
-```java
-SimpleClass simpleClass = new SimpleClass();
-Faker.fakeData(simpleClass);
-```
-
-You can also customize the behavior of the `java-faker` library when generating data for custom classes by passing an Options object to the `Faker.fakeData()` method:
-
-```java
-Options options = new Options().withFieldProvider("a", field -> 42);
-
-SimpleClass simpleClass = new SimpleClass();
-Faker.fakeData(simpleClass, options);
-```
-
-In this example, the `a` field of the `SimpleClass` will always be set to `42`.
 
 ## Conclusion
 
