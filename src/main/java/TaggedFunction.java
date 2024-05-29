@@ -1,8 +1,6 @@
 import java.lang.reflect.Field;
 
-/**
- * @author regy
- */
+@FunctionalInterface
 public interface TaggedFunction {
     Object generate(Field field) throws Exception;
 }

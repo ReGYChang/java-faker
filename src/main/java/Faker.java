@@ -3,24 +3,24 @@ import annotation.JFaker;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * @author regy
- */
 public class Faker {
+
     private static final Random RANDOM = new Random();
 
     public static void fakeData(Object obj) throws Exception {
         fakeData(obj, new Options(), new HashSet<>());
     }
 
-    public static void fakeData(Object obj, Options ops) throws Exception {
-        fakeData(obj, ops, new HashSet<>());
+    public static void fakeData(Object obj, Options options) throws Exception {
+        fakeData(obj, options, new HashSet<>());
     }
 
-    private static void fakeData(Object obj, Options ops, Set<Object> visited) throws Exception {
+    private static void fakeData(Object obj, Options options, Set<Object> visited) throws Exception {
         if (obj == null || visited.contains(obj) || isPrimitive(obj)) {
             return;
         }
@@ -32,24 +32,24 @@ public class Faker {
             if (!field.isSynthetic()) {
                 field.setAccessible(true);
                 Class<?> fieldType = field.getType();
-                TaggedFunction provider = getProviderByTag(field, ops.getFieldProviders());
+                TaggedFunction provider = getProviderByTag(field, options.getFieldProviders());
 
                 try {
                     if (provider != null) {
                         Object value = provider.generate(field);
                         field.set(obj, value);
                     } else if (isPrimitive(fieldType)) {
-                        field.set(obj, generateRandomPrimitive(fieldType, ops));
+                        field.set(obj, generateRandomPrimitive(fieldType, options));
                     } else if (fieldType.isArray()) {
-                        Object array = createArray(fieldType.getComponentType(), ops);
+                        Object array = createArray(fieldType.getComponentType(), options);
                         field.set(obj, array);
                     } else if (field.getGenericType() instanceof ParameterizedType) {
                         ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                        Object parameterizedInstance = createParameterizedTypeInstance(parameterizedType, ops);
+                        Object parameterizedInstance = createParameterizedTypeInstance(parameterizedType, options);
                         field.set(obj, parameterizedInstance);
                     } else {
-                        Object fieldValue = createInstance(fieldType, ops);
-                        fakeData(fieldValue, ops, visited);
+                        Object fieldValue = createInstance(fieldType, options);
+                        fakeData(fieldValue, options, visited);
                         field.set(obj, fieldValue);
                     }
                 } catch (IllegalAccessException e) {
@@ -61,14 +61,15 @@ public class Faker {
 
     private static TaggedFunction getProviderByTag(Field field, Map<String, TaggedFunction> providers) {
         return field.isAnnotationPresent(JFaker.class) &&
-                providers.containsKey(field.getAnnotation(JFaker.class).value()) ? providers.get(field.getAnnotation(JFaker.class).value()) : null;
+                providers.containsKey(field.getAnnotation(JFaker.class).value()) ?
+                providers.get(field.getAnnotation(JFaker.class).value()) : null;
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T createInstance(Class<T> clazz, Options ops) {
+    private static <T> T createInstance(Class<T> clazz, Options options) {
         try {
             if (isPrimitive(clazz)) {
-                return (T) generateRandomPrimitive(clazz, ops);
+                return (T) generateRandomPrimitive(clazz, options);
             }
             return clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
@@ -76,16 +77,16 @@ public class Faker {
         }
     }
 
-    private static Object createParameterizedTypeInstance(ParameterizedType parameterizedType, Options ops) {
+    private static Object createParameterizedTypeInstance(ParameterizedType parameterizedType, Options options) {
         try {
             Type rawType = parameterizedType.getRawType();
 
             if (rawType == List.class) {
                 Type elementType = parameterizedType.getActualTypeArguments()[0];
                 if (elementType instanceof Class) {
-                    return createList((Class<?>) elementType, ops);
+                    return createList((Class<?>) elementType, options);
                 } else if (elementType instanceof ParameterizedType) {
-                    return createList((Class<?>) ((ParameterizedType) elementType).getRawType(), ops);
+                    return createList((Class<?>) ((ParameterizedType) elementType).getRawType(), options);
                 }
             } else if (rawType == Map.class) {
                 Type keyType = parameterizedType.getActualTypeArguments()[0];
@@ -95,12 +96,12 @@ public class Faker {
                     return createMap(
                             (Class<?>) keyType,
                             (Class<?>) valueType,
-                            ops);
+                            options);
                 } else if (keyType instanceof Class && valueType instanceof ParameterizedType) {
                     return createMap(
                             (Class<?>) keyType,
-                            createParameterizedTypeInstance((ParameterizedType) valueType, ops),
-                            ops);
+                            createParameterizedTypeInstance((ParameterizedType) valueType, options),
+                            options);
                 }
             }
 
@@ -110,30 +111,30 @@ public class Faker {
         }
     }
 
-    public static <T> List<T> createList(Class<T> elementType, Options ops) throws Exception {
+    public static <T> List<T> createList(Class<T> elementType, Options options) throws Exception {
         int length =
-                RANDOM.nextInt(ops.getRandomMaxArraySize() - ops.getRandomMinArraySize() + 1) +
-                        ops.getRandomMinArraySize();
+                RANDOM.nextInt(options.getRandomMaxArraySize() - options.getRandomMinArraySize() + 1) +
+                        options.getRandomMinArraySize();
         List<T> list = new ArrayList<>(length);
 
         for (int i = 0; i < length; i++) {
-            T element = createInstance(elementType, ops);
-            fakeData(element, ops);
+            T element = createInstance(elementType, options);
+            fakeData(element, options);
             list.add(element);
         }
 
         return list;
     }
 
-    public static <K, V> Map<K, V> createMap(Class<K> keyType, Class<V> valueType, Options ops) throws Exception {
+    public static <K, V> Map<K, V> createMap(Class<K> keyType, Class<V> valueType, Options options) throws Exception {
         int length =
-                RANDOM.nextInt(ops.getRandomMaxArraySize() - ops.getRandomMinArraySize() + 1) +
-                        ops.getRandomMinArraySize();
+                RANDOM.nextInt(options.getRandomMaxArraySize() - options.getRandomMinArraySize() + 1) +
+                        options.getRandomMinArraySize();
         Map<K, V> map = new HashMap<>(length);
 
         for (int i = 0; i < length; i++) {
-            K key = createInstance(keyType, ops);
-            V value = createInstance(valueType, ops);
+            K key = createInstance(keyType, options);
+            V value = createInstance(valueType, options);
             fakeData(key);
             fakeData(value);
             map.put(key, value);
@@ -142,26 +143,26 @@ public class Faker {
         return map;
     }
 
-    public static <K> Map<K, Object> createMap(Class<K> keyType, Object value, Options ops) {
+    public static <K> Map<K, Object> createMap(Class<K> keyType, Object value, Options options) {
         int length =
-                RANDOM.nextInt(ops.getRandomMaxArraySize() - ops.getRandomMinArraySize() + 1) +
-                        ops.getRandomMinArraySize();
+                RANDOM.nextInt(options.getRandomMaxArraySize() - options.getRandomMinArraySize() + 1) +
+                        options.getRandomMinArraySize();
         Map<K, Object> map = new HashMap<>(length);
 
         for (int i = 0; i < length; i++) {
-            K key = createInstance(keyType, ops);
+            K key = createInstance(keyType, options);
             map.put(key, value);
         }
 
         return map;
     }
 
-    private static Object createArray(Class<?> componentType, Options ops) throws Exception {
-        int length = RANDOM.nextInt(ops.getRandomMaxArraySize()) + 1;
+    private static Object createArray(Class<?> componentType, Options options) throws Exception {
+        int length = RANDOM.nextInt(options.getRandomMaxArraySize()) + 1;
         Object array = java.lang.reflect.Array.newInstance(componentType, length);
 
         for (int i = 0; i < length; i++) {
-            Object element = createInstance(componentType, ops);
+            Object element = createInstance(componentType, options);
             fakeData(element);
             java.lang.reflect.Array.set(array, i, element);
         }
@@ -180,25 +181,25 @@ public class Faker {
                 fieldType.equals(Long.class) || fieldType.equals(Float.class) || fieldType.equals(Double.class);
     }
 
-    private static Object generateRandomPrimitive(Class<?> fieldType, Options ops) {
+    private static Object generateRandomPrimitive(Class<?> fieldType, Options options) {
         if (fieldType == boolean.class || fieldType.equals(Boolean.class)) {
             return randomBoolean();
         } else if (fieldType == char.class || fieldType.equals(Character.class)) {
-            return randomString(ops).charAt(0);
+            return randomString(options).charAt(0);
         } else if (fieldType == byte.class || fieldType.equals(Byte.class)) {
-            return (byte) randomInteger(ops);
+            return (byte) randomInteger(options);
         } else if (fieldType == short.class || fieldType.equals(Short.class)) {
-            return (short) randomInteger(ops);
+            return (short) randomInteger(options);
         } else if (fieldType == int.class || fieldType.equals(Integer.class)) {
-            return randomInteger(ops);
+            return randomInteger(options);
         } else if (fieldType == long.class || fieldType.equals(Long.class)) {
-            return randomLong(ops);
+            return randomLong(options);
         } else if (fieldType == float.class || fieldType.equals(Float.class)) {
-            return randomFloat(ops);
+            return randomFloat(options);
         } else if (fieldType == double.class || fieldType.equals(Double.class)) {
-            return randomDouble(ops);
+            return randomDouble(options);
         } else if (fieldType == String.class) {
-            return randomString(ops);
+            return randomString(options);
         }
         return null;
     }
@@ -220,29 +221,29 @@ public class Faker {
         return sb.toString();
     }
 
-    public static int randomInteger(Options ops) {
-        RandomBoundary<Integer> boundary = ops.getRandomIntegerBoundary();
+    public static int randomInteger(Options options) {
+        RandomBoundary<Integer> boundary = options.getRandomIntegerBoundary();
         int span = boundary.getEnd() - boundary.getStart();
         return span <= 0 ?
                 boundary.getStart() : RANDOM.nextInt(span);
     }
 
-    public static long randomLong(Options ops) {
-        RandomBoundary<Integer> boundary = ops.getRandomIntegerBoundary();
+    public static long randomLong(Options options) {
+        RandomBoundary<Integer> boundary = options.getRandomIntegerBoundary();
         int span = boundary.getEnd() - boundary.getStart();
         return boundary.getStart() + Math.abs(RANDOM.nextLong()) % (span + 1L);
     }
 
 
-    public static float randomFloat(Options ops) {
-        RandomBoundary<Float> boundary = ops.getRandomFloatBoundary();
+    public static float randomFloat(Options options) {
+        RandomBoundary<Float> boundary = options.getRandomFloatBoundary();
         float span = boundary.getEnd() - boundary.getStart();
         return span <= 0 ?
                 boundary.getStart() : boundary.getStart() + RANDOM.nextFloat() * span;
     }
 
-    public static double randomDouble(Options ops) {
-        RandomBoundary<Double> boundary = ops.getRandomDoubleBoundary();
+    public static double randomDouble(Options options) {
+        RandomBoundary<Double> boundary = options.getRandomDoubleBoundary();
         double span = boundary.getEnd() - boundary.getStart();
         return span <= 0 ?
                 boundary.getStart() : boundary.getStart() + RANDOM.nextDouble() * span;
@@ -261,6 +262,20 @@ public class Faker {
         T[] enumConstants = enumClass.getEnumConstants();
         int index = ThreadLocalRandom.current().nextInt(enumConstants.length);
         return enumConstants[index];
+    }
+
+    /**
+     * Generates a random LocalDateTime instance within the specified range.
+     *
+     * @param startDateTime The start of the range, inclusive.
+     * @param endDateTime   The end of the range, exclusive.
+     * @return A random LocalDateTime instance within the specified range.
+     */
+    public static LocalDateTime randomLocalDateTime(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        long secondsDifference = startDateTime.until(endDateTime, ChronoUnit.SECONDS);
+        long randomSeconds = ThreadLocalRandom.current().nextLong(secondsDifference);
+
+        return startDateTime.plusSeconds(randomSeconds);
     }
 
     public static String randomNullableString(Options options) {

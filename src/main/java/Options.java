@@ -1,26 +1,40 @@
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author regy
- */
 public class Options {
+
     private final Map<String, Void> ignoreFields = new HashMap<>();
+
     private final Map<String, TaggedFunction> fieldProviders = new HashMap<>();
+
     private int maxDepth = 1;
+
     private boolean ignoreInterface = false;
+
     private int randomStringLength = 25;
+
     private int randomMaxArraySize = 100;
+
     private int randomMinArraySize = 0;
+
     private boolean generateUniqueValues = false;
+
     private int maxGenerateStringRetries = 1000000;
+
     private boolean setArrayMapNullIfLenZero = false;
+
     private boolean setArrayMapRandomToZero = false;
+
     private final RandomBoundary<Integer> randomIntegerBoundary = new RandomBoundary<>(0, 100);
+
     private final RandomBoundary<Float> randomFloatBoundary = new RandomBoundary<>(0f, 100f);
+
     private final RandomBoundary<Double> randomDoubleBoundary = new RandomBoundary<>(0.0, 100.0);
+
     private String randomStringCharacterSet;
+
     private double nullProbability;
+
     private Class<? extends Enum<?>> randomEnumClass;
 
     public Options() {

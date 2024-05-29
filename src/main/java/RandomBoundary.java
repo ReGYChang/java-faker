@@ -1,8 +1,7 @@
-/**
- * @author regy
- */
 public class RandomBoundary<T extends Number> {
+
     private T start;
+
     private T end;
 
     public RandomBoundary(T start, T end) {
