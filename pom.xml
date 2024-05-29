@@ -32,8 +32,8 @@
 
     <scm>
         <url>https://github.com/ReGYChang/java-faker</url>
-        <connection>scm:git:git://github.com/ReGYChang/java-faker.git</connection>
-        <developerConnection>scm:git:ssh://github.com:ReGYChang/java-faker.git</developerConnection>
+        <connection>scm:git:git@github.com/ReGYChang/java-faker.git</connection>
+        <developerConnection>scm:git:git@github.com:ReGYChang/java-faker.git</developerConnection>
     </scm>
 
     <properties>
