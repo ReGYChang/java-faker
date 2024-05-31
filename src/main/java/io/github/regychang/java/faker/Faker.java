@@ -1,6 +1,6 @@
-package io.github.regychang.javafaker;
+package io.github.regychang.java.faker;
 
-import io.github.regychang.javafaker.annotation.JFaker;
+import io.github.regychang.java.faker.annotation.JFaker;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;

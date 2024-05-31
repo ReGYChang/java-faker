@@ -1,4 +1,4 @@
-package io.github.regychang.javafaker;
+package io.github.regychang.java.faker;
 
 public class RandomBoundary<T extends Number> {
 

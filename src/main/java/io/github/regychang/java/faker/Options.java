@@ -1,4 +1,4 @@
-package io.github.regychang.javafaker;
+package io.github.regychang.java.faker;
 
 import java.util.HashMap;
 import java.util.Map;
