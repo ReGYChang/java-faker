@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.regychang</groupId>
     <artifactId>java-faker</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
 
     <name>java-faker</name>
     <description>
@@ -32,7 +32,7 @@
         <url>https://github.com/ReGYChang/java-faker</url>
         <connection>scm:git:git@github.com/ReGYChang/java-faker.git</connection>
         <developerConnection>scm:git:git@github.com:ReGYChang/java-faker.git</developerConnection>
-      <tag>release-0.1.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <properties>
