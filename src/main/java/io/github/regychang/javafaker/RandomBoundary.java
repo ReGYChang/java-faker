@@ -1,3 +1,5 @@
+package io.github.regychang.javafaker;
+
 public class RandomBoundary<T extends Number> {
 
     private T start;

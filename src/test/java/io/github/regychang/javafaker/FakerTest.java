@@ -1,4 +1,6 @@
-import annotation.JFaker;
+package io.github.regychang.javafaker;
+
+import io.github.regychang.javafaker.annotation.JFaker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -257,9 +259,9 @@ class FakerTest {
 
     //    @Test
 //    void testGenerateUniqueValues() {
-//        // Assuming a new method 'generateUniqueStrings' is implemented in the Faker class
-//        Options options = new Options().withGenerateUniqueValues(true);
-//        Set<String> uniqueStrings = Faker.generateUniqueStrings(100);
+//        // Assuming a new method 'generateUniqueStrings' is implemented in the io.github.regychang.javafaker.Faker class
+//        io.github.regychang.javafaker.Options options = new io.github.regychang.javafaker.Options().withGenerateUniqueValues(true);
+//        Set<String> uniqueStrings = io.github.regychang.javafaker.Faker.generateUniqueStrings(100);
 //        assertEquals(100, uniqueStrings.size(), "Generated set should contain 100 unique strings");
 //    }
 

@@ -1,3 +1,5 @@
+package io.github.regychang.javafaker;
+
 import java.lang.reflect.Field;
 
 @FunctionalInterface

@@ -1,3 +1,5 @@
+package io.github.regychang.javafaker;
+
 import java.util.HashMap;
 import java.util.Map;
 
