@@ -1,6 +1,8 @@
 package io.github.regychang.java.faker;
 
-public class RandomBoundary<T extends Number> {
+import java.io.Serializable;
+
+public class RandomBoundary<T extends Number> implements Serializable {
 
     private T start;
 

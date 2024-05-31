@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -264,6 +270,37 @@ class FakerTest {
 //        Set<String> uniqueStrings = io.github.regychang.javafaker.faker.Faker.generateUniqueStrings(100);
 //        assertEquals(100, uniqueStrings.size(), "Generated set should contain 100 unique strings");
 //    }
+
+    @Test
+    @DisplayName("Test options serializability")
+    void testOptionsSerializability() {
+        Options options = new Options().withFieldProvider("a", field -> 42);
+        Assertions.assertTrue(isSerializable(options), "Options should be serializable");
+    }
+
+    private boolean isSerializable(Object obj) {
+        if (!(obj instanceof Serializable)) {
+            return false;
+        }
+
+        try {
+            // Serialize the object
+            ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutStream = new ObjectOutputStream(byteOutStream);
+            objectOutStream.writeObject(obj);
+            objectOutStream.close();
+
+            // Deserialize the object
+            ByteArrayInputStream byteInStream = new ByteArrayInputStream(byteOutStream.toByteArray());
+            ObjectInputStream objectInStream = new ObjectInputStream(byteInStream);
+            objectInStream.readObject();
+            objectInStream.close();
+
+            return true;
+        } catch (IOException | ClassNotFoundException e) {
+            return false;
+        }
+    }
 
     public enum SimpleEnum {
         VALUE1, VALUE2, VALUE3

@@ -1,9 +1,10 @@
 package io.github.regychang.java.faker;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Options {
+public class Options implements Serializable {
 
     private final Map<String, Void> ignoreFields = new HashMap<>();
 
