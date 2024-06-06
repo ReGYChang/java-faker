@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.regychang</groupId>
@@ -32,8 +33,8 @@
         <url>https://github.com/ReGYChang/java-faker</url>
         <connection>scm:git:git@github.com/ReGYChang/java-faker.git</connection>
         <developerConnection>scm:git:git@github.com:ReGYChang/java-faker.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <target.java.version>11</target.java.version>
@@ -47,10 +48,17 @@
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <central-publishing-maven-plugin.version>0.4.0</central-publishing-maven-plugin.version>
 
+        <dk-brics-automation.version>1.12-4</dk-brics-automation.version>
         <jupiter.version>5.9.2</jupiter.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>dk.brics</groupId>
+            <artifactId>automaton</artifactId>
+            <version>${dk-brics-automation.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

@@ -11,10 +11,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 class FakerTest {
 
@@ -26,43 +31,52 @@ class FakerTest {
                         .withRandomMinArraySize(0)
                         .withRandomMaxArraySize(0);
 
-        Assertions.assertTrue(Faker.createList(String.class, ops).isEmpty(), "Generated list should be empty");
-        Assertions.assertTrue(Faker.createMap(String.class, String.class, ops).isEmpty(), "Generated map should be empty");
+        Assertions.assertTrue(
+                Faker.createList(String.class, ops).isEmpty(),
+                "Generated list should be empty");
+        Assertions.assertTrue(
+                Faker.createMap(String.class, String.class, ops).isEmpty(),
+                "Generated map should be empty");
     }
 
     @Test
     @DisplayName("Test random long generation within specified boundaries")
     void testRandomLong() {
         Options ops = new Options().withRandomIntegerBoundaries(10, 20);
-        for (int i = 0; i < 100; i++) {
-            long randomLong = Faker.randomLong(ops);
-            Assertions.assertTrue(randomLong >= 10 && randomLong <= 20, "Generated long should be within specified boundaries");
-        }
+        IntStream.range(0, 100)
+                .forEach(
+                        idx -> {
+                            long randomLong = Faker.randomLong(ops);
+                            Assertions.assertTrue(
+                                    randomLong >= 10 && randomLong <= 20,
+                                    "Generated long should be within specified boundaries");
+                        });
     }
 
     @Test
     @DisplayName("Test random double generation within specified boundaries")
     void testRandomDouble() {
         Options ops = new Options().withRandomDoubleBoundaries(10.5, 20.5);
-        for (int i = 0; i < 100; i++) {
-            double randomDouble = Faker.randomDouble(ops);
-            Assertions.assertTrue(randomDouble >= 10.5 && randomDouble <= 20.5, "Generated double should be within specified boundaries");
-        }
+        IntStream.range(0, 100)
+                .forEach(
+                        idx -> {
+                            double randomDouble = Faker.randomDouble(ops);
+                            Assertions.assertTrue(
+                                    randomDouble >= 10.5 && randomDouble <= 20.5,
+                                    "Generated double should be within specified boundaries");
+                        });
     }
 
     @Test
     @DisplayName("Test random boolean generation")
     void testRandomBoolean() {
-        int trueCount = 0;
-        int falseCount = 0;
-        for (int i = 0; i < 1000; i++) {
-            boolean randomBoolean = Faker.randomBoolean();
-            if (randomBoolean) {
-                trueCount++;
-            } else {
-                falseCount++;
-            }
-        }
+        long trueCount =
+                IntStream.range(0, 1000)
+                        .mapToObj(idx -> Faker.randomBoolean())
+                        .filter(Boolean::booleanValue)
+                        .count();
+        long falseCount = 1000 - trueCount;
+
         Assertions.assertTrue(trueCount > 0, "There should be at least one true value generated");
         Assertions.assertTrue(falseCount > 0, "There should be at least one false value generated");
     }
@@ -91,7 +105,9 @@ class FakerTest {
         Options ops = new Options().withRandomEnum(SimpleEnum.class);
         SimpleEnum randomEnum = Faker.randomEnum(ops);
         Assertions.assertNotNull(randomEnum, "Generated enum should not be null");
-        Assertions.assertTrue(Arrays.asList(SimpleEnum.values()).contains(randomEnum), "Generated enum should be a valid value from the TestEnum");
+        Assertions.assertTrue(
+                Arrays.asList(SimpleEnum.values()).contains(randomEnum),
+                "Generated enum should be a valid value from the TestEnum");
     }
 
     @Test
@@ -108,16 +124,13 @@ class FakerTest {
     @DisplayName("Test null value probability")
     void testNullValueProbability() {
         Options ops = new Options().withNullProbability(0.5);
-        int nullCount = 0;
-        int notNullCount = 0;
-        for (int i = 0; i < 1000; i++) {
-            String randomString = Faker.randomNullableString(ops);
-            if (randomString == null) {
-                nullCount++;
-            } else {
-                notNullCount++;
-            }
-        }
+        long nullCount =
+                IntStream.range(0, 1000)
+                        .mapToObj(idx -> Faker.randomNullableString(ops))
+                        .filter(Objects::isNull)
+                        .count();
+        long notNullCount = 1000 - nullCount;
+
         Assertions.assertTrue(nullCount > 0, "There should be at least one null value generated");
         Assertions.assertTrue(notNullCount > 0, "There should be at least one not-null value generated");
     }
@@ -128,13 +141,8 @@ class FakerTest {
         SimpleClass simpleClass = new SimpleClass();
         Faker.fakeData(simpleClass);
 
-        Assertions.assertNotNull(simpleClass.a);
-        Assertions.assertNotNull(simpleClass.b);
-        Assertions.assertNotNull(simpleClass.c);
-        Assertions.assertNotNull(simpleClass.d);
-        Assertions.assertNotNull(simpleClass.e);
-        Assertions.assertNotNull(simpleClass.f);
-        Assertions.assertNotNull(simpleClass.g);
+        Arrays.asList(simpleClass.a, simpleClass.b, simpleClass.c, simpleClass.d, simpleClass.e, simpleClass.f, simpleClass.g)
+                .forEach(Assertions::assertNotNull);
     }
 
     @Test
@@ -145,13 +153,15 @@ class FakerTest {
 
         Assertions.assertNotNull(nestedClass.aa);
         Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass.a);
-        Assertions.assertNotNull(nestedClass.simpleClass.b);
-        Assertions.assertNotNull(nestedClass.simpleClass.c);
-        Assertions.assertNotNull(nestedClass.simpleClass.d);
-        Assertions.assertNotNull(nestedClass.simpleClass.e);
-        Assertions.assertNotNull(nestedClass.simpleClass.f);
-        Assertions.assertNotNull(nestedClass.simpleClass.g);
+        Arrays.asList(
+                        nestedClass.simpleClass.a,
+                        nestedClass.simpleClass.b,
+                        nestedClass.simpleClass.c,
+                        nestedClass.simpleClass.d,
+                        nestedClass.simpleClass.e,
+                        nestedClass.simpleClass.f,
+                        nestedClass.simpleClass.g)
+                .forEach(Assertions::assertNotNull);
     }
 
     @Test
@@ -174,31 +184,26 @@ class FakerTest {
         Assertions.assertFalse(listClass.simpleClassList.isEmpty());
         Assertions.assertFalse(listClass.nestedClassList.isEmpty());
 
-        for (SimpleClass item : listClass.simpleClassList) {
+        listClass.simpleClassList.forEach(item -> {
             Assertions.assertNotNull(item);
-            Assertions.assertNotNull(item.a);
-            Assertions.assertNotNull(item.b);
-            Assertions.assertNotNull(item.c);
-            Assertions.assertNotNull(item.d);
-            Assertions.assertNotNull(item.e);
-            Assertions.assertNotNull(item.f);
-            Assertions.assertNotNull(item.g);
-        }
+            Arrays.asList(item.a, item.b, item.c, item.d, item.e, item.f, item.g).forEach(Assertions::assertNotNull);
+        });
 
-        for (NestedClass item : listClass.nestedClassList) {
+        listClass.nestedClassList.forEach(item -> {
             Assertions.assertNotNull(item);
             Assertions.assertNotNull(item.aa);
             Assertions.assertNotNull(item.simpleClass);
-            Assertions.assertNotNull(item.simpleClass.a);
-            Assertions.assertNotNull(item.simpleClass.b);
-            Assertions.assertNotNull(item.simpleClass.c);
-            Assertions.assertNotNull(item.simpleClass.d);
-            Assertions.assertNotNull(item.simpleClass.e);
-            Assertions.assertNotNull(item.simpleClass.f);
-            Assertions.assertNotNull(item.simpleClass.g);
-        }
+            Arrays.asList(
+                            item.simpleClass.a,
+                            item.simpleClass.b,
+                            item.simpleClass.c,
+                            item.simpleClass.d,
+                            item.simpleClass.e,
+                            item.simpleClass.f,
+                            item.simpleClass.g)
+                    .forEach(Assertions::assertNotNull);
+        });
     }
-
 
     @Test
     @DisplayName("Test map class data generation")
@@ -209,15 +214,17 @@ class FakerTest {
         Assertions.assertNotNull(mapClass.simpleClassMap);
         Assertions.assertNotNull(mapClass.nestedClassMap);
 
-        for (Map.Entry<String, SimpleClass> entry : mapClass.simpleClassMap.entrySet()) {
-            Assertions.assertNotNull(entry.getKey());
-            Assertions.assertNotNull(entry.getValue());
-        }
+        mapClass.simpleClassMap.forEach(
+                (key, value) -> {
+                    Assertions.assertNotNull(key);
+                    Assertions.assertNotNull(value);
+                });
 
-        for (Map.Entry<String, NestedClass> entry : mapClass.nestedClassMap.entrySet()) {
-            Assertions.assertNotNull(entry.getKey());
-            Assertions.assertNotNull(entry.getValue());
-        }
+        mapClass.nestedClassMap.forEach(
+                (key, value) -> {
+                    Assertions.assertNotNull(key);
+                    Assertions.assertNotNull(value);
+                });
     }
 
     @Test
@@ -231,64 +238,74 @@ class FakerTest {
         Assertions.assertFalse(mapListClass.simpleClassListMap.isEmpty());
         Assertions.assertFalse(mapListClass.nestedClassListMap.isEmpty());
 
-        for (Map.Entry<String, List<SimpleClass>> entry : mapListClass.simpleClassListMap.entrySet()) {
-            Assertions.assertNotNull(entry.getKey());
+        mapListClass.simpleClassListMap.forEach(
+                (key, value) -> {
+                    Assertions.assertNotNull(key);
+                    value.forEach(
+                            item -> {
+                                Assertions.assertNotNull(item);
+                                Arrays.asList(item.a, item.b, item.c, item.d, item.e, item.f, item.g)
+                                        .forEach(Assertions::assertNotNull);
+                            });
+                });
 
-            for (SimpleClass item : entry.getValue()) {
-                Assertions.assertNotNull(item);
-                Assertions.assertNotNull(item.a);
-                Assertions.assertNotNull(item.b);
-                Assertions.assertNotNull(item.c);
-                Assertions.assertNotNull(item.d);
-                Assertions.assertNotNull(item.e);
-                Assertions.assertNotNull(item.f);
-                Assertions.assertNotNull(item.g);
-            }
-        }
-
-        for (Map.Entry<String, List<NestedClass>> entry : mapListClass.nestedClassListMap.entrySet()) {
-            Assertions.assertNotNull(entry.getKey());
-
-            for (NestedClass item : entry.getValue()) {
-                Assertions.assertNotNull(item);
-                Assertions.assertNotNull(item.aa);
-                Assertions.assertNotNull(item.simpleClass);
-                Assertions.assertNotNull(item.simpleClass.a);
-                Assertions.assertNotNull(item.simpleClass.b);
-                Assertions.assertNotNull(item.simpleClass.c);
-                Assertions.assertNotNull(item.simpleClass.d);
-                Assertions.assertNotNull(item.simpleClass.e);
-                Assertions.assertNotNull(item.simpleClass.f);
-                Assertions.assertNotNull(item.simpleClass.g);
-            }
-        }
+        mapListClass.nestedClassListMap.forEach(
+                (key, value) -> {
+                    Assertions.assertNotNull(key);
+                    value.forEach(
+                            item -> {
+                                Assertions.assertNotNull(item);
+                                Assertions.assertNotNull(item.aa);
+                                Assertions.assertNotNull(item.simpleClass);
+                                Arrays.asList(
+                                                item.simpleClass.a,
+                                                item.simpleClass.b,
+                                                item.simpleClass.c,
+                                                item.simpleClass.d,
+                                                item.simpleClass.e,
+                                                item.simpleClass.f,
+                                                item.simpleClass.g)
+                                        .forEach(Assertions::assertNotNull);
+                            });
+                });
     }
 
     @Test
+    @DisplayName("Test field provider")
     void testWithFieldProvider() throws Exception {
-        Options options = new Options()
-                .withFieldProvider("a", field -> 42);
+        Options options = new Options().withFieldProvider("a", field -> 42);
 
         SimpleClass simpleClass = new SimpleClass();
         Faker.fakeData(simpleClass, options);
 
-        Assertions.assertNotNull(simpleClass.a);
-        Assertions.assertNotNull(simpleClass.b);
-        Assertions.assertNotNull(simpleClass.c);
-        Assertions.assertNotNull(simpleClass.d);
-        Assertions.assertNotNull(simpleClass.e);
-        Assertions.assertNotNull(simpleClass.f);
-        Assertions.assertNotNull(simpleClass.g);
+        Arrays.asList(
+                        simpleClass.a,
+                        simpleClass.b,
+                        simpleClass.c,
+                        simpleClass.d,
+                        simpleClass.e,
+                        simpleClass.f,
+                        simpleClass.g)
+                .forEach(Assertions::assertNotNull);
         Assertions.assertEquals(42, simpleClass.a);
     }
 
-    //    @Test
-//    void testGenerateUniqueValues() {
-//        // Assuming a new method 'generateUniqueStrings' is implemented in the io.github.regychang.javafaker.faker.Faker class
-//        io.github.regychang.javafaker.faker.Options options = new io.github.regychang.javafaker.faker.Options().withGenerateUniqueValues(true);
-//        Set<String> uniqueStrings = io.github.regychang.javafaker.faker.Faker.generateUniqueStrings(100);
-//        assertEquals(100, uniqueStrings.size(), "Generated set should contain 100 unique strings");
-//    }
+    @Test
+    @DisplayName("Test formatted string provider")
+    void testWithFormattedStringProvider() throws Exception {
+        SimpleClass simpleClass = new SimpleClass();
+        Faker.fakeData(simpleClass);
+
+        Assertions.assertNotNull(simpleClass.f);
+
+        Field field = SimpleClass.class.getDeclaredField("f");
+        JFaker annotation = field.getAnnotation(JFaker.class);
+        String regexFormat = annotation.format();
+
+        Assertions.assertTrue(
+                Pattern.matches(regexFormat, simpleClass.f),
+                "Field 'f' should match the specified regex format");
+    }
 
     @Test
     @DisplayName("Test options serializability")
@@ -336,7 +353,7 @@ class FakerTest {
         public Float d;
         @JFaker("e")
         public Boolean e;
-        @JFaker("f")
+        @JFaker(value = "f", format = "[0-9]{2}[A-Z]{2}[0-9]{2}[A-Z][0-9]-[A-Z]{2}[0-9][A-Z][0-9]{2}")
         public String f;
         @JFaker("g")
         public Instant g;

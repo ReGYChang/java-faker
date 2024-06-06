@@ -1,8 +1,8 @@
 package io.github.regychang.java.faker;
 
 import io.github.regychang.java.faker.annotation.JFaker;
+import io.github.regychang.java.faker.provider.FormattedStringProvider;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -10,20 +10,21 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 public class Faker {
 
     private static final Random RANDOM = new Random();
 
-    public static void fakeData(Object obj) throws Exception {
+    public static void fakeData(Object obj) {
         fakeData(obj, new Options(), new HashSet<>());
     }
 
-    public static void fakeData(Object obj, Options options) throws Exception {
+    public static void fakeData(Object obj, Options options) {
         fakeData(obj, options, new HashSet<>());
     }
 
-    private static void fakeData(Object obj, Options options, Set<Object> visited) throws Exception {
+    private static void fakeData(Object obj, Options options, Set<Object> visited) {
         if (obj == null || visited.contains(obj) || isPrimitive(obj)) {
             return;
         }
@@ -31,44 +32,55 @@ public class Faker {
         visited.add(obj);
         Class<?> clazz = obj.getClass();
 
-        for (Field field : clazz.getDeclaredFields()) {
-            if (!field.isSynthetic()) {
-                field.setAccessible(true);
-                Class<?> fieldType = field.getType();
-                TaggedFunction provider = getProviderByTag(field, options.getFieldProviders());
+        Stream.of(clazz.getDeclaredFields())
+                .filter(field -> !field.isSynthetic())
+                .forEach(
+                        field -> {
+                            field.setAccessible(true);
+                            Class<?> fieldType = field.getType();
 
-                try {
-                    if (provider != null) {
-                        Object value = provider.generate(field);
-                        field.set(obj, value);
-                    } else if (isPrimitive(fieldType)) {
-                        field.set(obj, generateRandomPrimitive(fieldType, options));
-                    } else if (fieldType.isArray()) {
-                        Object array = createArray(fieldType.getComponentType(), options);
-                        field.set(obj, array);
-                    } else if (field.getGenericType() instanceof ParameterizedType) {
-                        ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                        Object parameterizedInstance = createParameterizedTypeInstance(parameterizedType, options);
-                        field.set(obj, parameterizedInstance);
-                    } else {
-                        Object fieldValue = createInstance(fieldType, options);
-                        fakeData(fieldValue, options, visited);
-                        field.set(obj, fieldValue);
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+                            JFaker annotation = field.getAnnotation(JFaker.class);
+                            FieldProvider fieldProvider =
+                                    Optional.ofNullable(options.getFieldProviders())
+                                            .filter(providers -> annotation != null)
+                                            .map(
+                                                    providers ->
+                                                            providers.getOrDefault(
+                                                                    annotation.value(),
+                                                                    null))
+                                            .orElse(null);
+
+                            try {
+                                if (fieldProvider != null) {
+                                    Object value = fieldProvider.generate(field);
+                                    field.set(obj, value);
+                                } else if (
+                                        annotation != null &&
+                                                fieldType.equals(String.class) &&
+                                                !annotation.format().isEmpty()) {
+                                    FormattedStringProvider formattedStringProvider = new FormattedStringProvider(annotation.format());
+                                    Object value = formattedStringProvider.generate(field);
+                                    field.set(obj, value);
+                                } else if (isPrimitive(fieldType)) {
+                                    field.set(obj, generateRandomPrimitive(fieldType, options));
+                                } else if (fieldType.isArray()) {
+                                    Object array = createArray(fieldType.getComponentType(), options);
+                                    field.set(obj, array);
+                                } else if (field.getGenericType() instanceof ParameterizedType) {
+                                    ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                                    Object parameterizedInstance = createParameterizedTypeInstance(parameterizedType, options);
+                                    field.set(obj, parameterizedInstance);
+                                } else {
+                                    Object fieldValue = createInstance(fieldType, options);
+                                    fakeData(fieldValue, options, visited);
+                                    field.set(obj, fieldValue);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
     }
 
-    private static TaggedFunction getProviderByTag(Field field, Map<String, TaggedFunction> providers) {
-        return field.isAnnotationPresent(JFaker.class) &&
-                providers.containsKey(field.getAnnotation(JFaker.class).value()) ?
-                providers.get(field.getAnnotation(JFaker.class).value()) : null;
-    }
-
-    @SuppressWarnings("unchecked")
     private static <T> T createInstance(Class<T> clazz, Options options) {
         try {
             if (isPrimitive(clazz)) {

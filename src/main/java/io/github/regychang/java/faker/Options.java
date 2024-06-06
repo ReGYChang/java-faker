@@ -9,7 +9,7 @@ public class Options implements Serializable {
 
     private final Map<String, Void> ignoreFields = new HashMap<>();
 
-    private final Map<String, TaggedFunction> fieldProviders = new HashMap<>();
+    private final Map<String, FieldProvider> fieldProviders = new HashMap<>();
 
     private int maxDepth = 1;
 
@@ -53,7 +53,7 @@ public class Options implements Serializable {
         return this;
     }
 
-    public Options withFieldProvider(String fieldName, TaggedFunction provider) {
+    public Options withFieldProvider(String fieldName, FieldProvider provider) {
         fieldProviders.put(fieldName, provider);
         return this;
     }
@@ -131,7 +131,7 @@ public class Options implements Serializable {
         return ignoreFields;
     }
 
-    public Map<String, TaggedFunction> getFieldProviders() {
+    public Map<String, FieldProvider> getFieldProviders() {
         return fieldProviders;
     }
 
