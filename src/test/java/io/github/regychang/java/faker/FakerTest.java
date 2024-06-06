@@ -3,6 +3,7 @@ package io.github.regychang.java.faker;
 import io.github.regychang.java.faker.annotation.JFaker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -229,7 +230,7 @@ class FakerTest {
 
     @Test
     @DisplayName("Test generic in map data generation")
-    void testGenericInMap() throws Exception {
+    void testGenericInMap() {
         MapListClass mapListClass = new MapListClass();
         Faker.fakeData(mapListClass);
 

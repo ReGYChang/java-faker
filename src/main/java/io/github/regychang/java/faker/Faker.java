@@ -38,7 +38,6 @@ public class Faker {
                         field -> {
                             field.setAccessible(true);
                             Class<?> fieldType = field.getType();
-
                             JFaker annotation = field.getAnnotation(JFaker.class);
                             FieldProvider fieldProvider =
                                     Optional.ofNullable(options.getFieldProviders())

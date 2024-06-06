@@ -19,7 +19,7 @@ public class Options implements Serializable {
 
     private int randomMaxArraySize = 100;
 
-    private int randomMinArraySize = 0;
+    private int randomMinArraySize = 1;
 
     private boolean generateUniqueValues = false;
 
