@@ -2,7 +2,7 @@ package io.github.regychang.java.faker;
 
 import java.io.Serializable;
 
-public class RandomBoundary<T extends Number> implements Serializable {
+public class RandomBoundary<T extends Comparable<T>> implements Serializable {
 
     private T start;
 

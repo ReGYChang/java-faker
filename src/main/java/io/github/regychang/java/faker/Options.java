@@ -1,6 +1,7 @@
 package io.github.regychang.java.faker;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,8 @@ public class Options implements Serializable {
     private final RandomBoundary<Float> randomFloatBoundary = new RandomBoundary<>(0f, 100f);
 
     private final RandomBoundary<Double> randomDoubleBoundary = new RandomBoundary<>(0.0, 100.0);
+
+    private final RandomBoundary<Instant> randomInstantBoundary = new RandomBoundary<>(Instant.MIN, Instant.MAX);
 
     private String randomStringCharacterSet;
 
@@ -118,6 +121,12 @@ public class Options implements Serializable {
         return this;
     }
 
+    public Options withRandomInstantBoundaries(Instant start, Instant end) {
+        this.randomInstantBoundary.setStart(start);
+        this.randomInstantBoundary.setEnd(end);
+        return this;
+    }
+
     public Map<String, Void> getIgnoreFields() {
         return ignoreFields;
     }
@@ -172,6 +181,10 @@ public class Options implements Serializable {
 
     public RandomBoundary<Double> getRandomDoubleBoundary() {
         return randomDoubleBoundary;
+    }
+
+    public RandomBoundary<Instant> getRandomInstantBoundary() {
+        return randomInstantBoundary;
     }
 
     public Options withRandomStringCharacterSet(String characterSet) {

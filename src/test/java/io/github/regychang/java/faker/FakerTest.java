@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,8 @@ class FakerTest {
     void testRandomStringWithCharacterSet() {
         Options ops = new Options().withRandomStringLength(20).withRandomStringCharacterSet("abc");
         String randomString = Faker.randomString(ops);
-        Assertions.assertTrue(randomString.chars().allMatch(c -> c == 'a' || c == 'b' || c == 'c'),
+        Assertions.assertTrue(
+                randomString.chars().allMatch(c -> c == 'a' || c == 'b' || c == 'c'),
                 "Generated string should only contain characters from the specified character set");
     }
 
@@ -90,6 +92,16 @@ class FakerTest {
         SimpleEnum randomEnum = Faker.randomEnum(ops);
         Assertions.assertNotNull(randomEnum, "Generated enum should not be null");
         Assertions.assertTrue(Arrays.asList(SimpleEnum.values()).contains(randomEnum), "Generated enum should be a valid value from the TestEnum");
+    }
+
+    @Test
+    @DisplayName("Test random instant generation")
+    void testRandomInstant() {
+        Instant now = Instant.now();
+        Options ops = new Options().withRandomInstantBoundaries(Instant.MIN, now);
+        Instant randomInstant = Faker.randomInstant(ops);
+        Assertions.assertNotNull(randomInstant, "Generated instant should not be null");
+        Assertions.assertTrue(randomInstant.isBefore(now));
     }
 
     @Test
@@ -122,6 +134,7 @@ class FakerTest {
         Assertions.assertNotNull(simpleClass.d);
         Assertions.assertNotNull(simpleClass.e);
         Assertions.assertNotNull(simpleClass.f);
+        Assertions.assertNotNull(simpleClass.g);
     }
 
     @Test
@@ -132,12 +145,13 @@ class FakerTest {
 
         Assertions.assertNotNull(nestedClass.aa);
         Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass);
-        Assertions.assertNotNull(nestedClass.simpleClass);
+        Assertions.assertNotNull(nestedClass.simpleClass.a);
+        Assertions.assertNotNull(nestedClass.simpleClass.b);
+        Assertions.assertNotNull(nestedClass.simpleClass.c);
+        Assertions.assertNotNull(nestedClass.simpleClass.d);
+        Assertions.assertNotNull(nestedClass.simpleClass.e);
+        Assertions.assertNotNull(nestedClass.simpleClass.f);
+        Assertions.assertNotNull(nestedClass.simpleClass.g);
     }
 
     @Test
@@ -168,6 +182,7 @@ class FakerTest {
             Assertions.assertNotNull(item.d);
             Assertions.assertNotNull(item.e);
             Assertions.assertNotNull(item.f);
+            Assertions.assertNotNull(item.g);
         }
 
         for (NestedClass item : listClass.nestedClassList) {
@@ -180,6 +195,7 @@ class FakerTest {
             Assertions.assertNotNull(item.simpleClass.d);
             Assertions.assertNotNull(item.simpleClass.e);
             Assertions.assertNotNull(item.simpleClass.f);
+            Assertions.assertNotNull(item.simpleClass.g);
         }
     }
 
@@ -226,6 +242,7 @@ class FakerTest {
                 Assertions.assertNotNull(item.d);
                 Assertions.assertNotNull(item.e);
                 Assertions.assertNotNull(item.f);
+                Assertions.assertNotNull(item.g);
             }
         }
 
@@ -242,6 +259,7 @@ class FakerTest {
                 Assertions.assertNotNull(item.simpleClass.d);
                 Assertions.assertNotNull(item.simpleClass.e);
                 Assertions.assertNotNull(item.simpleClass.f);
+                Assertions.assertNotNull(item.simpleClass.g);
             }
         }
     }
@@ -260,6 +278,7 @@ class FakerTest {
         Assertions.assertNotNull(simpleClass.d);
         Assertions.assertNotNull(simpleClass.e);
         Assertions.assertNotNull(simpleClass.f);
+        Assertions.assertNotNull(simpleClass.g);
         Assertions.assertEquals(42, simpleClass.a);
     }
 
@@ -319,6 +338,8 @@ class FakerTest {
         public Boolean e;
         @JFaker("f")
         public String f;
+        @JFaker("g")
+        public Instant g;
     }
 
     public static class NestedClass {

@@ -5,6 +5,7 @@ import io.github.regychang.java.faker.annotation.JFaker;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -180,7 +181,8 @@ public class Faker {
         return fieldType.isPrimitive() ||
                 fieldType.equals(String.class) || fieldType.equals(Boolean.class) || fieldType.equals(Byte.class) ||
                 fieldType.equals(Character.class) || fieldType.equals(Short.class) || fieldType.equals(Integer.class) ||
-                fieldType.equals(Long.class) || fieldType.equals(Float.class) || fieldType.equals(Double.class);
+                fieldType.equals(Long.class) || fieldType.equals(Float.class) || fieldType.equals(Double.class) ||
+                fieldType.equals(Instant.class);
     }
 
     private static Object generateRandomPrimitive(Class<?> fieldType, Options options) {
@@ -202,6 +204,8 @@ public class Faker {
             return randomDouble(options);
         } else if (fieldType == String.class) {
             return randomString(options);
+        } else if (fieldType == Instant.class) {
+            return randomInstant(options);
         }
         return null;
     }
@@ -266,13 +270,14 @@ public class Faker {
         return enumConstants[index];
     }
 
-    /**
-     * Generates a random LocalDateTime instance within the specified range.
-     *
-     * @param startDateTime The start of the range, inclusive.
-     * @param endDateTime   The end of the range, exclusive.
-     * @return A random LocalDateTime instance within the specified range.
-     */
+    public static Instant randomInstant(Options options) {
+        RandomBoundary<Instant> boundary = options.getRandomInstantBoundary();
+        Instant startInstant = boundary.getStart();
+        Instant endInstant = boundary.getEnd();
+        long secondsDifference = startInstant.until(endInstant, ChronoUnit.SECONDS);
+        return startInstant.plusSeconds(secondsDifference);
+    }
+
     public static LocalDateTime randomLocalDateTime(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         long secondsDifference = startDateTime.until(endDateTime, ChronoUnit.SECONDS);
         long randomSeconds = ThreadLocalRandom.current().nextLong(secondsDifference);
