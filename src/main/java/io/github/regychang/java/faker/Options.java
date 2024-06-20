@@ -1,5 +1,7 @@
 package io.github.regychang.java.faker;
 
+import io.github.regychang.java.faker.generator.FieldGenerator;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
@@ -9,7 +11,7 @@ public class Options implements Serializable {
 
     private final Map<String, Void> ignoreFields = new HashMap<>();
 
-    private final Map<String, FieldProvider> fieldProviders = new HashMap<>();
+    private final Map<String, FieldGenerator<?>> fieldGenerators = new HashMap<>();
 
     private int maxDepth = 1;
 
@@ -53,8 +55,8 @@ public class Options implements Serializable {
         return this;
     }
 
-    public Options withFieldProvider(String fieldName, FieldProvider provider) {
-        fieldProviders.put(fieldName, provider);
+    public Options withFieldProvider(String fieldName, FieldGenerator<?> generator) {
+        fieldGenerators.put(fieldName, generator);
         return this;
     }
 
@@ -131,8 +133,8 @@ public class Options implements Serializable {
         return ignoreFields;
     }
 
-    public Map<String, FieldProvider> getFieldProviders() {
-        return fieldProviders;
+    public Map<String, FieldGenerator<?>> getFieldProviders() {
+        return fieldGenerators;
     }
 
     public int getMaxDepth() {

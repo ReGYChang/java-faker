@@ -1,14 +1,35 @@
 package io.github.regychang.java.faker;
 
 import io.github.regychang.java.faker.annotation.JFaker;
-import io.github.regychang.java.faker.provider.FormattedStringProvider;
+import io.github.regychang.java.faker.generator.FieldGenerator;
+import io.github.regychang.java.faker.provider.ArrayFieldProvider;
+import io.github.regychang.java.faker.provider.FieldProvider;
+import io.github.regychang.java.faker.provider.MapFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.BooleanFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.ByteFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.CharacterFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.DoubleFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.EnumFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.FloatFieldProvider;
+import io.github.regychang.java.faker.provider.GenericFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.InstantFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.IntegerFieldProvider;
+import io.github.regychang.java.faker.provider.collection.ListFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.LongFieldProvider;
+import io.github.regychang.java.faker.provider.collection.SetFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.ShortFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.StringFieldProvider;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
@@ -16,10 +37,124 @@ public class Faker {
 
     private static final Random RANDOM = new Random();
 
+    private final ConcurrentHashMap<Integer, FieldProvider<?>> PROVIDERS = new ConcurrentHashMap<>();
+
+    public <T> T fakeData(@Nonnull Class<T> clazz, Options options) {
+        Objects.requireNonNull(clazz, "Class cannot be null");
+        return getOrCreateProvider(clazz, options).provide();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T fakeData(@Nonnull Field field, Options options) {
+        Objects.requireNonNull(field, "Field cannot be null");
+        return (T) getOrCreateProvider(field, options).provide();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T fakeData(Type type) {
+        return type instanceof Class ?
+                fakeData((Class<T>) type) :
+                (T) getOrCreateProvider((ParameterizedType) type, new Options()).provide();
+    }
+
+    public <T> T fakeData(@Nonnull Class<T> clazz) {
+        return fakeData(clazz, new Options());
+    }
+
+    public <T> T fakeData(@Nonnull Field field) {
+        return fakeData(field, new Options());
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> FieldProvider<T> getOrCreateProvider(
+            @Nonnull ParameterizedType parameterizedType, Options options) {
+        Type rawType = parameterizedType.getRawType();
+        return rawType instanceof Class ?
+                createProvider(null, (Class<T>) rawType, parameterizedType, options) :
+                getOrCreateProvider((ParameterizedType) rawType, options);
+    }
+
+    public <T> FieldProvider<T> getOrCreateProvider(
+            @Nonnull Class<T> clazz, Options options) {
+        return getOrCreateProvider(null, clazz, options);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> FieldProvider<T> getOrCreateProvider(
+            @Nonnull Field field, Options options) {
+        return getOrCreateProvider(field, (Class<T>) field.getType(), options);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> FieldProvider<T> getOrCreateProvider(
+            @Nullable Field field, @Nonnull Class<T> clazz, Options options) {
+        return (FieldProvider<T>) PROVIDERS.computeIfAbsent(
+                getProviderKey(field, clazz),
+                key -> createProvider(field, clazz, null, options));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> FieldProvider<T> createProvider(
+            @Nullable Field field, Class<T> clazz, @Nullable ParameterizedType parameterizedType, Options options) {
+        if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
+            return (FieldProvider<T>) new BooleanFieldProvider(field, options);
+        }
+        if (clazz.equals(Character.class) || clazz.equals(char.class)) {
+            return (FieldProvider<T>) new CharacterFieldProvider(field, options);
+        }
+        if (clazz.equals(Byte.class) || clazz.equals(byte.class)) {
+            return (FieldProvider<T>) new ByteFieldProvider(field, options);
+        }
+        if (clazz.equals(Short.class) || clazz.equals(short.class)) {
+            return (FieldProvider<T>) new ShortFieldProvider(field, options);
+        }
+        if (clazz.equals(Integer.class) || clazz.equals(int.class)) {
+            return (FieldProvider<T>) new IntegerFieldProvider(field, options);
+        }
+        if (clazz.equals(Long.class) || clazz.equals(long.class)) {
+            return (FieldProvider<T>) new LongFieldProvider(field, options);
+        }
+        if (clazz.equals(Float.class) || clazz.equals(float.class)) {
+            return (FieldProvider<T>) new FloatFieldProvider(field, options);
+        }
+        if (clazz.equals(Double.class) || clazz.equals(double.class)) {
+            return (FieldProvider<T>) new DoubleFieldProvider(field, options);
+        }
+        if (clazz.equals(String.class)) {
+            return (FieldProvider<T>) new StringFieldProvider(field, options);
+        }
+        if (clazz.equals(Instant.class)) {
+            return (FieldProvider<T>) new InstantFieldProvider(field, options);
+        }
+        if (clazz.isEnum()) {
+            return (FieldProvider<T>) new EnumFieldProvider(field, (Class<Enum<?>>) clazz, options);
+        }
+        if (clazz.equals(List.class)) {
+            return (FieldProvider<T>) new ListFieldProvider<>(field, parameterizedType, options);
+        }
+        if (clazz.equals(Set.class)) {
+            return (FieldProvider<T>) new SetFieldProvider<>(field, parameterizedType, options);
+        }
+        if (clazz.equals(Map.class)) {
+            return (FieldProvider<T>) new MapFieldProvider(field, parameterizedType, options);
+        }
+        if (field != null && field.getType().isArray()) {
+            return (FieldProvider<T>) new ArrayFieldProvider(field, options);
+        }
+
+        return (FieldProvider<T>) new GenericFieldProvider(clazz, options);
+    }
+
+    private static int getProviderKey(Field field, Class<?> clazz) {
+        return field == null ? clazz.hashCode() : field.hashCode();
+    }
+
+    @Deprecated
     public static void fakeData(Object obj) {
         fakeData(obj, new Options(), new HashSet<>());
     }
 
+    @Deprecated
     public static void fakeData(Object obj, Options options) {
         fakeData(obj, options, new HashSet<>());
     }
@@ -39,26 +174,19 @@ public class Faker {
                             field.setAccessible(true);
                             Class<?> fieldType = field.getType();
                             JFaker annotation = field.getAnnotation(JFaker.class);
-                            FieldProvider fieldProvider =
+                            FieldGenerator<?> fieldGenerator =
                                     Optional.ofNullable(options.getFieldProviders())
                                             .filter(providers -> annotation != null)
                                             .map(
                                                     providers ->
                                                             providers.getOrDefault(
-                                                                    annotation.value(),
+                                                                    annotation.key(),
                                                                     null))
                                             .orElse(null);
 
                             try {
-                                if (fieldProvider != null) {
-                                    Object value = fieldProvider.generate(field);
-                                    field.set(obj, value);
-                                } else if (
-                                        annotation != null &&
-                                                fieldType.equals(String.class) &&
-                                                !annotation.format().isEmpty()) {
-                                    FormattedStringProvider formattedStringProvider = new FormattedStringProvider(annotation.format());
-                                    Object value = formattedStringProvider.generate(field);
+                                if (fieldGenerator != null) {
+                                    Object value = fieldGenerator.generate();
                                     field.set(obj, value);
                                 } else if (isPrimitive(fieldType)) {
                                     field.set(obj, generateRandomPrimitive(fieldType, options));
@@ -125,7 +253,7 @@ public class Faker {
         }
     }
 
-    public static <T> List<T> createList(Class<T> elementType, Options options) throws Exception {
+    public static <T> List<T> createList(Class<T> elementType, Options options) {
         int length =
                 RANDOM.nextInt(options.getRandomMaxArraySize() - options.getRandomMinArraySize() + 1) +
                         options.getRandomMinArraySize();
@@ -140,7 +268,7 @@ public class Faker {
         return list;
     }
 
-    public static <K, V> Map<K, V> createMap(Class<K> keyType, Class<V> valueType, Options options) throws Exception {
+    public static <K, V> Map<K, V> createMap(Class<K> keyType, Class<V> valueType, Options options) {
         int length =
                 RANDOM.nextInt(options.getRandomMaxArraySize() - options.getRandomMinArraySize() + 1) +
                         options.getRandomMinArraySize();
@@ -171,7 +299,7 @@ public class Faker {
         return map;
     }
 
-    private static Object createArray(Class<?> componentType, Options options) throws Exception {
+    private static Object createArray(Class<?> componentType, Options options) {
         int length = RANDOM.nextInt(options.getRandomMaxArraySize()) + 1;
         Object array = java.lang.reflect.Array.newInstance(componentType, length);
 
@@ -197,28 +325,40 @@ public class Faker {
     }
 
     private static Object generateRandomPrimitive(Class<?> fieldType, Options options) {
-        if (fieldType == boolean.class || fieldType.equals(Boolean.class)) {
-            return randomBoolean();
-        } else if (fieldType == char.class || fieldType.equals(Character.class)) {
-            return randomString(options).charAt(0);
-        } else if (fieldType == byte.class || fieldType.equals(Byte.class)) {
-            return (byte) randomInteger(options);
-        } else if (fieldType == short.class || fieldType.equals(Short.class)) {
-            return (short) randomInteger(options);
-        } else if (fieldType == int.class || fieldType.equals(Integer.class)) {
-            return randomInteger(options);
-        } else if (fieldType == long.class || fieldType.equals(Long.class)) {
-            return randomLong(options);
-        } else if (fieldType == float.class || fieldType.equals(Float.class)) {
-            return randomFloat(options);
-        } else if (fieldType == double.class || fieldType.equals(Double.class)) {
-            return randomDouble(options);
-        } else if (fieldType == String.class) {
-            return randomString(options);
-        } else if (fieldType == Instant.class) {
-            return randomInstant(options);
+        String typeName = fieldType.getName();
+
+        switch (typeName) {
+            case "boolean":
+            case "java.lang.Boolean":
+                return randomBoolean();
+            case "char":
+            case "java.lang.Character":
+                return randomString(options).charAt(0);
+            case "byte":
+            case "java.lang.Byte":
+                return (byte) randomInteger(options);
+            case "short":
+            case "java.lang.Short":
+                return (short) randomInteger(options);
+            case "int":
+            case "java.lang.Integer":
+                return randomInteger(options);
+            case "long":
+            case "java.lang.Long":
+                return randomLong(options);
+            case "float":
+            case "java.lang.Float":
+                return randomFloat(options);
+            case "double":
+            case "java.lang.Double":
+                return randomDouble(options);
+            case "java.lang.String":
+                return randomString(options);
+            case "java.time.Instant":
+                return randomInstant(options);
+            default:
+                return null;
         }
-        return null;
     }
 
     public static String randomString(Options options) {

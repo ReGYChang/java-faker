@@ -1,7 +1,12 @@
 package io.github.regychang.java.faker;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
+@Setter
+@Getter
 public class RandomBoundary<T extends Comparable<T>> implements Serializable {
 
     private T start;
@@ -10,22 +15,6 @@ public class RandomBoundary<T extends Comparable<T>> implements Serializable {
 
     public RandomBoundary(T start, T end) {
         this.start = start;
-        this.end = end;
-    }
-
-    public T getStart() {
-        return start;
-    }
-
-    public T getEnd() {
-        return end;
-    }
-
-    public void setStart(T start) {
-        this.start = start;
-    }
-
-    public void setEnd(T end) {
         this.end = end;
     }
 }
