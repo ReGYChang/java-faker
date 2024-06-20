@@ -9,11 +9,12 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class PrimitiveProvider<T> extends FieldProvider<T> {
 
-    protected final Integer cardinality;
+    protected Integer cardinality;
 
     protected final List<T> valueList;
 
@@ -21,6 +22,9 @@ public abstract class PrimitiveProvider<T> extends FieldProvider<T> {
         super(field, rawType, options);
         this.cardinality = getCardinality(annotation);
         this.valueList = initializeValueList();
+        if (valueList.size() > cardinality) {
+            cardinality = valueList.size();
+        }
     }
 
     private int getCardinality(JFaker annotation) {
@@ -32,7 +36,9 @@ public abstract class PrimitiveProvider<T> extends FieldProvider<T> {
             return new ArrayList<>();
         }
 
-        return Arrays.stream(annotation.values())
+        return Optional.ofNullable(annotation.values())
+                .stream()
+                .flatMap(Arrays::stream)
                 .map(this::cast)
                 .collect(Collectors.toList());
     }
@@ -46,9 +52,12 @@ public abstract class PrimitiveProvider<T> extends FieldProvider<T> {
             if (cardinality > 0) {
                 return provideWithCardinality();
             }
-            return provideWithValueList();
         }
-        return provideInternal();
+
+        T value = provideInternal();
+        valueList.add(value);
+
+        return value;
     }
 
     protected T provideWithCardinality() {
