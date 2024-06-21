@@ -94,7 +94,7 @@ public class Faker {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> FieldProvider<T> createProvider(
+    private <T> FieldProvider<T> createProvider(
             @Nullable Field field, Class<T> clazz, @Nullable ParameterizedType parameterizedType, Options options) {
         if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
             return (FieldProvider<T>) new BooleanFieldProvider(field, options);
@@ -145,7 +145,7 @@ public class Faker {
         return (FieldProvider<T>) new GenericFieldProvider(clazz, options);
     }
 
-    private static int getProviderKey(Field field, Class<?> clazz) {
+    private int getProviderKey(Field field, Class<?> clazz) {
         return field == null ? clazz.hashCode() : field.hashCode();
     }
 

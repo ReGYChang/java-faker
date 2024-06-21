@@ -28,14 +28,6 @@ public class TypeUtils {
                                 new IllegalArgumentException("Field cannot be null"));
     }
 
-    public static boolean isParameterizedType(Type type) {
-        return Optional.ofNullable(type)
-                .map(t -> t instanceof ParameterizedType)
-                .orElseThrow(
-                        () ->
-                                new IllegalArgumentException("Type cannot be null"));
-    }
-
     /**
      * Retrieves the parameterized type of field.
      *
