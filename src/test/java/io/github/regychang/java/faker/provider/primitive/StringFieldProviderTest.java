@@ -95,9 +95,26 @@ public class StringFieldProviderTest {
     }
 
     @Test
-    public void testGenerateWithValueListAndCardinality() {
+    public void testIncreaseCardinalityToMatchValueList() {
         when(mockAnnotation.values()).thenReturn(new String[]{"a", "b", "c"});
         when(mockAnnotation.cardinality()).thenReturn(2);
+
+        stringFieldProvider = new StringFieldProvider(mockField, mockOptions);
+        Set<String> distinctStrings = generateDistinctStrings(stringFieldProvider);
+
+        assertEquals(
+                stringFieldProvider.cardinality,
+                distinctStrings.size(),
+                "The size of distinct strings should be equal to the number of cardinality provided.");
+        assertTrue(
+                stringFieldProvider.valueList.containsAll(distinctStrings),
+                "All distinct strings should be in the value list.");
+    }
+
+    @Test
+    public void testExpandValueListToMeetCardinality() {
+        when(mockAnnotation.values()).thenReturn(new String[]{"a", "b"});
+        when(mockAnnotation.cardinality()).thenReturn(3);
 
         stringFieldProvider = new StringFieldProvider(mockField, mockOptions);
         Set<String> distinctStrings = generateDistinctStrings(stringFieldProvider);
