@@ -1,8 +1,6 @@
 package io.github.regychang.java.faker;
 
 import io.github.regychang.java.faker.annotation.JFaker;
-import io.github.regychang.java.faker.generator.LinearTimestampGenerator;
-import io.github.regychang.java.faker.provider.MapFieldProvider;
 import lombok.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -429,31 +427,31 @@ class FakerTest {
     @Data
     public static class SimpleStringClass {
 
-//        @JFaker(
-//                key = "f",
-//                format = "[0-9]{2}[A-Z]{2}[0-9]{2}[A-Z][0-9]-[A-Z]{2}[0-9][A-Z][0-9]{2}",
-//                cardinality = 3,
-//                values = {"a", "b"})
-//        public String f;
-//
-//        @JFaker(
-//                key = "g",
-//                values = {"3", "1"})
-//        public Integer g;
+        @JFaker(
+                key = "f",
+                format = "[0-9]{2}[A-Z]{2}[0-9]{2}[A-Z][0-9]-[A-Z]{2}[0-9][A-Z][0-9]{2}",
+                cardinality = 3,
+                values = {"a", "b"})
+        public String f;
+
+        @JFaker(
+                key = "g",
+                values = {"3", "1"})
+        public Integer g;
 
         public SimpleEnum e;
 
-//        public List<String> stringList;
-//
-//        public Set<Integer> intSet;
-//
-//        public String[] stringArray;
-//
-//        public Map<String, Integer> stringIntegerMap;
-//
-//        public List<List<String>> stringListList;
-//
-//        public List<String>[] stringListArray;
+        public List<String> stringList;
+
+        public Set<Integer> intSet;
+
+        public String[] stringArray;
+
+        public Map<String, Integer> stringIntegerMap;
+
+        public List<List<String>> stringListList;
+
+        public List<String>[] stringListArray;
     }
 
     @Test
@@ -461,6 +459,7 @@ class FakerTest {
     void testV2() {
         Faker faker = new Faker();
         SimpleStringClass simpleStringClass = faker.fakeData(SimpleStringClass.class);
-        System.out.println(simpleStringClass);
+
+        Assertions.assertNotNull(simpleStringClass);
     }
 }

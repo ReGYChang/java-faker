@@ -3,6 +3,8 @@ package io.github.regychang.java.faker;
 import io.github.regychang.java.faker.annotation.JFaker;
 import io.github.regychang.java.faker.generator.FieldGenerator;
 import io.github.regychang.java.faker.provider.ArrayFieldProvider;
+import io.github.regychang.java.faker.provider.CustomFieldProvider;
+import io.github.regychang.java.faker.provider.DefaultFieldProvider;
 import io.github.regychang.java.faker.provider.FieldProvider;
 import io.github.regychang.java.faker.provider.MapFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.BooleanFieldProvider;
@@ -74,14 +76,12 @@ public class Faker {
                 getOrCreateProvider((ParameterizedType) rawType, options);
     }
 
-    public <T> FieldProvider<T> getOrCreateProvider(
-            @Nonnull Class<T> clazz, Options options) {
+    public <T> FieldProvider<T> getOrCreateProvider(@Nonnull Class<T> clazz, Options options) {
         return getOrCreateProvider(null, clazz, options);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldProvider<T> getOrCreateProvider(
-            @Nonnull Field field, Options options) {
+    public <T> FieldProvider<T> getOrCreateProvider(@Nonnull Field field, Options options) {
         return getOrCreateProvider(field, (Class<T>) field.getType(), options);
     }
 
@@ -96,6 +96,9 @@ public class Faker {
     @SuppressWarnings("unchecked")
     private <T> FieldProvider<T> createProvider(
             @Nullable Field field, Class<T> clazz, @Nullable ParameterizedType parameterizedType, Options options) {
+        if (isCustomFieldProviderPresent(field)) {
+            return instantiateCustomFieldProvider(field);
+        }
         if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
             return (FieldProvider<T>) new BooleanFieldProvider(field, options);
         }
@@ -147,6 +150,54 @@ public class Faker {
 
     private int getProviderKey(Field field, Class<?> clazz) {
         return field == null ? clazz.hashCode() : field.hashCode();
+    }
+
+    private boolean isCustomFieldProviderPresent(Field field) {
+        return Optional.ofNullable(field)
+                .map(f -> f.getAnnotation(JFaker.class))
+                .map(JFaker::provider)
+                .filter(provider -> !provider.equals(DefaultFieldProvider.class))
+                .isPresent();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> FieldProvider<T> instantiateCustomFieldProvider(Field field) {
+        try {
+            Class<? extends CustomFieldProvider<T>> providerClass =
+                    (Class<? extends CustomFieldProvider<T>>) field.getAnnotation(JFaker.class).provider();
+            checkTypeCompatibility(field, providerClass);
+            return providerClass.getDeclaredConstructor(Field.class).newInstance(field);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    String.format(
+                            "Failed to instantiate custom field provider for field '%s'. Reason: %s",
+                            field.getName(),
+                            e.getMessage()));
+        }
+    }
+
+    private <T> void checkTypeCompatibility(
+            Field field, Class<? extends CustomFieldProvider<T>> providerClass) {
+        Optional<Type> elementType =
+                Optional.of(providerClass)
+                        .map(Class::getGenericSuperclass)
+                        .filter(ParameterizedType.class::isInstance)
+                        .map(ParameterizedType.class::cast)
+                        .map(ParameterizedType::getActualTypeArguments)
+                        .filter(args -> args.length > 0)
+                        .map(args -> args[0]);
+
+        elementType.ifPresent(
+                type -> {
+                    Type fieldType = field.getGenericType();
+                    if (!type.equals(fieldType)) {
+                        throw new IllegalArgumentException(
+                                String.format(
+                                        "Type mismatch between custom field provider(%s) and field(%s)",
+                                        type.getTypeName(),
+                                        fieldType.getTypeName()));
+                    }
+                });
     }
 
     @Deprecated

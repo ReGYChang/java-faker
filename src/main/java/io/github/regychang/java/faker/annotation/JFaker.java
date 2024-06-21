@@ -1,5 +1,8 @@
 package io.github.regychang.java.faker.annotation;
 
+import io.github.regychang.java.faker.provider.CustomFieldProvider;
+import io.github.regychang.java.faker.provider.DefaultFieldProvider;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,6 +24,8 @@ public @interface JFaker {
     int cardinality() default -1;
 
     Feature[] features() default {};
+
+    Class<? extends CustomFieldProvider> provider() default DefaultFieldProvider.class;
 
     enum Feature {
 
