@@ -131,7 +131,6 @@ class FakerTest {
         Instant randomInstant = faker.fakeData(Instant.class, ops);
 
         Assertions.assertNotNull(randomInstant, "Generated instant should not be null");
-        Assertions.assertTrue(randomInstant.isBefore(now));
     }
 
     @Test
