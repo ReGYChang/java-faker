@@ -24,6 +24,7 @@ import io.github.regychang.java.faker.provider.primitive.StringFieldProvider;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -35,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
-public class Faker {
+public class Faker implements Serializable {
 
     private static final Random RANDOM = new Random();
 

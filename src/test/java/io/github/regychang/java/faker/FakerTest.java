@@ -331,6 +331,13 @@ class FakerTest {
     }
 
     @Test
+    @DisplayName("Test faker serializability")
+    void testFakerSerializability() {
+        Faker faker = new Faker();
+        Assertions.assertTrue(isSerializable(faker), "Faker should be serializable");
+    }
+
+    @Test
     @DisplayName("Test options serializability")
     void testOptionsSerializability() {
         Options options = new Options().withFieldProvider("a", () -> 42);
