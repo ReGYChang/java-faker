@@ -20,17 +20,34 @@ public abstract class FieldProvider<T> implements Serializable {
     @Nullable
     protected final JFaker annotation;
 
+    protected final long fakerFeatures;
+
     protected final Options options;
 
     protected FieldProvider(Field field, Class<T> rawType, Options options) {
         this.field = field;
         this.rawType = rawType;
-        this.annotation =
-                Optional.ofNullable(field)
-                        .map(f -> f.getAnnotation(JFaker.class))
-                        .orElse(null);
+        this.annotation = instantiateAnnotation(field);
+        this.fakerFeatures = instantiateFakerFeatures(annotation);
         this.options = options;
     }
 
     public abstract T provide();
+
+    protected boolean isFeatureEnabled(JFaker.Feature feature) {
+        return (fakerFeatures & feature.mask) != 0;
+    }
+
+    private JFaker instantiateAnnotation(Field field) {
+        return Optional.ofNullable(field)
+                .map(f -> f.getAnnotation(JFaker.class))
+                .orElse(null);
+    }
+
+    private long instantiateFakerFeatures(JFaker annotation) {
+        return Optional.ofNullable(annotation)
+                .map(JFaker::features)
+                .map(JFaker.Feature::of)
+                .orElse(0L);
+    }
 }

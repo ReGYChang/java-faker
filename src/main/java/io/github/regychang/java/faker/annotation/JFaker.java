@@ -1,14 +1,12 @@
 package io.github.regychang.java.faker.annotation;
 
-import io.github.regychang.java.faker.provider.FieldProvider;
-import io.github.regychang.java.faker.provider.GenericFieldProvider;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 
-@Target({ElementType.TYPE, ElementType.FIELD})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JFaker {
 
@@ -22,5 +20,26 @@ public @interface JFaker {
 
     int cardinality() default -1;
 
-    Class<? extends FieldProvider<?>> fieldProvider() default GenericFieldProvider.class;
+    Feature[] features() default {};
+
+    enum Feature {
+
+        LinearTimestamp(1L);
+
+        public final long mask;
+
+        Feature(long mask) {
+            this.mask = mask;
+        }
+
+        public static long of(Feature[] features) {
+            return features == null ?
+                    0L :
+                    Arrays.stream(features)
+                            .mapToLong(feature -> feature.mask)
+                            .reduce(
+                                    0L,
+                                    (a, b) -> a | b);
+        }
+    }
 }
