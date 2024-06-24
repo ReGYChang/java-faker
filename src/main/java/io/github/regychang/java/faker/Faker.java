@@ -1,7 +1,6 @@
 package io.github.regychang.java.faker;
 
 import io.github.regychang.java.faker.annotation.JFaker;
-import io.github.regychang.java.faker.generator.FieldGenerator;
 import io.github.regychang.java.faker.provider.ArrayFieldProvider;
 import io.github.regychang.java.faker.provider.CustomFieldProvider;
 import io.github.regychang.java.faker.provider.DefaultFieldProvider;
@@ -97,8 +96,8 @@ public class Faker implements Serializable {
     @SuppressWarnings("unchecked")
     private <T> FieldProvider<T> createProvider(
             @Nullable Field field, Class<T> clazz, @Nullable ParameterizedType parameterizedType, Options options) {
-        if (isCustomFieldProviderPresent(field)) {
-            return instantiateCustomFieldProvider(field);
+        if (isCustomFieldProviderPresent(field, options)) {
+            return instantiateCustomFieldProvider(field, options);
         }
         if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
             return (FieldProvider<T>) new BooleanFieldProvider(field, options);
@@ -153,28 +152,48 @@ public class Faker implements Serializable {
         return field == null ? clazz.hashCode() : field.hashCode();
     }
 
-    private boolean isCustomFieldProviderPresent(Field field) {
+    private boolean isCustomFieldProviderPresent(Field field, Options options) {
         return Optional.ofNullable(field)
                 .map(f -> f.getAnnotation(JFaker.class))
+                .filter(
+                        annotation ->
+                                options.getFieldProviders()
+                                        .containsKey(annotation.key()))
                 .map(JFaker::provider)
-                .filter(provider -> !provider.equals(DefaultFieldProvider.class))
+                .filter(
+                        provider ->
+                                !provider.equals(DefaultFieldProvider.class))
                 .isPresent();
     }
 
     @SuppressWarnings("unchecked")
-    private <T> FieldProvider<T> instantiateCustomFieldProvider(Field field) {
-        try {
-            Class<? extends CustomFieldProvider<T>> providerClass =
-                    (Class<? extends CustomFieldProvider<T>>) field.getAnnotation(JFaker.class).provider();
-            checkTypeCompatibility(field, providerClass);
-            return providerClass.getDeclaredConstructor(Field.class).newInstance(field);
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    String.format(
-                            "Failed to instantiate custom field provider for field '%s'. Reason: %s",
-                            field.getName(),
-                            e.getMessage()));
-        }
+    private <T> FieldProvider<T> instantiateCustomFieldProvider(Field field, Options options) {
+        return Optional.ofNullable(field)
+                .map(
+                        f -> {
+                            JFaker annotation = field.getAnnotation(JFaker.class);
+                            Map<String, FieldProvider<?>> fieldProviders = options.getFieldProviders();
+                            if (fieldProviders.containsKey(annotation.key())) {
+                                return (FieldProvider<T>) fieldProviders.get(annotation.key());
+                            }
+
+                            try {
+                                Class<? extends CustomFieldProvider<T>> providerClass =
+                                        (Class<? extends CustomFieldProvider<T>>) annotation.provider();
+                                checkTypeCompatibility(field, providerClass);
+                                return providerClass.getDeclaredConstructor(Field.class).newInstance(field);
+                            } catch (Exception e) {
+                                throw new RuntimeException(
+                                        String.format(
+                                                "Failed to instantiate custom field provider for field '%s': %s.",
+                                                field.getName(),
+                                                e.getMessage()));
+                            }
+                        })
+                .orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "Cannot instantiate field provider due to field object is null."));
     }
 
     private <T> void checkTypeCompatibility(
@@ -226,7 +245,7 @@ public class Faker implements Serializable {
                             field.setAccessible(true);
                             Class<?> fieldType = field.getType();
                             JFaker annotation = field.getAnnotation(JFaker.class);
-                            FieldGenerator<?> fieldGenerator =
+                            FieldProvider<?> fieldProvider =
                                     Optional.ofNullable(options.getFieldProviders())
                                             .filter(providers -> annotation != null)
                                             .map(
@@ -237,8 +256,8 @@ public class Faker implements Serializable {
                                             .orElse(null);
 
                             try {
-                                if (fieldGenerator != null) {
-                                    Object value = fieldGenerator.generate();
+                                if (fieldProvider != null) {
+                                    Object value = fieldProvider.provide();
                                     field.set(obj, value);
                                 } else if (isPrimitive(fieldType)) {
                                     field.set(obj, generateRandomPrimitive(fieldType, options));

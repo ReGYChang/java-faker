@@ -1,17 +1,19 @@
 package io.github.regychang.java.faker;
 
-import io.github.regychang.java.faker.generator.FieldGenerator;
+import io.github.regychang.java.faker.provider.FieldProvider;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class Options implements Serializable {
 
     private final Map<String, Void> ignoreFields = new HashMap<>();
 
-    private final Map<String, FieldGenerator<?>> fieldGenerators = new HashMap<>();
+    private final Map<String, FieldProvider<?>> fieldProviders = new HashMap<>();
 
     private int maxDepth = 1;
 
@@ -55,8 +57,8 @@ public class Options implements Serializable {
         return this;
     }
 
-    public Options withFieldProvider(String fieldName, FieldGenerator<?> generator) {
-        fieldGenerators.put(fieldName, generator);
+    public Options withFieldProviders(String fieldName, FieldProvider<?> provider) {
+        fieldProviders.put(fieldName, provider);
         return this;
     }
 
@@ -129,73 +131,9 @@ public class Options implements Serializable {
         return this;
     }
 
-    public Map<String, Void> getIgnoreFields() {
-        return ignoreFields;
-    }
-
-    public Map<String, FieldGenerator<?>> getFieldProviders() {
-        return fieldGenerators;
-    }
-
-    public int getMaxDepth() {
-        return maxDepth;
-    }
-
-    public boolean isIgnoreInterface() {
-        return ignoreInterface;
-    }
-
-    public int getRandomStringLength() {
-        return randomStringLength;
-    }
-
-    public int getRandomMaxArraySize() {
-        return randomMaxArraySize;
-    }
-
-    public int getRandomMinArraySize() {
-        return randomMinArraySize;
-    }
-
-    public boolean isGenerateUniqueValues() {
-        return generateUniqueValues;
-    }
-
-    public int getMaxGenerateStringRetries() {
-        return maxGenerateStringRetries;
-    }
-
-    public boolean isSetArrayMapNullIfLenZero() {
-        return setArrayMapNullIfLenZero;
-    }
-
-    public boolean isSetArrayMapRandomToZero() {
-        return setArrayMapRandomToZero;
-    }
-
-    public RandomBoundary<Integer> getRandomIntegerBoundary() {
-        return randomIntegerBoundary;
-    }
-
-    public RandomBoundary<Float> getRandomFloatBoundary() {
-        return randomFloatBoundary;
-    }
-
-    public RandomBoundary<Double> getRandomDoubleBoundary() {
-        return randomDoubleBoundary;
-    }
-
-    public RandomBoundary<Instant> getRandomInstantBoundary() {
-        return randomInstantBoundary;
-    }
-
     public Options withRandomStringCharacterSet(String characterSet) {
         this.randomStringCharacterSet = characterSet;
         return this;
-    }
-
-    public String getRandomStringCharacterSet() {
-        return randomStringCharacterSet;
     }
 
     public Options withRandomEnum(Class<? extends Enum<?>> randomEnumClass) {
@@ -203,16 +141,9 @@ public class Options implements Serializable {
         return this;
     }
 
-    public Class<? extends Enum<?>> getRandomEnumClass() {
-        return randomEnumClass;
-    }
-
     public Options withNullProbability(double nullProbability) {
         this.nullProbability = nullProbability;
         return this;
     }
 
-    public double getNullProbability() {
-        return nullProbability;
-    }
 }

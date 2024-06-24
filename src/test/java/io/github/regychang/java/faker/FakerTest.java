@@ -296,7 +296,7 @@ class FakerTest {
     @Test
     @DisplayName("Test field provider")
     void testWithFieldProvider() {
-        Options options = new Options().withFieldProvider("a", () -> 42);
+        Options options = new Options().withFieldProviders("a", new TestFieldProvider());
 
         SimpleClass simpleClass = new SimpleClass();
         Faker.fakeData(simpleClass, options);
@@ -340,7 +340,7 @@ class FakerTest {
     @Test
     @DisplayName("Test options serializability")
     void testOptionsSerializability() {
-        Options options = new Options().withFieldProvider("a", () -> 42);
+        Options options = new Options().withFieldProviders("a", new TestFieldProvider());
         Assertions.assertTrue(isSerializable(options), "Options should be serializable");
     }
 
