@@ -19,6 +19,10 @@ public @interface JFaker {
 
     int length() default 25;
 
+    int min() default 1;
+
+    int max() default 100;
+
     String[] values() default {};
 
     int cardinality() default -1;

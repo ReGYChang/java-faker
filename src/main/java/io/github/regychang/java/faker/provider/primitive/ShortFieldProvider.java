@@ -4,7 +4,7 @@ import io.github.regychang.java.faker.Options;
 
 import java.lang.reflect.Field;
 
-public class ShortFieldProvider extends PrimitiveProvider<Short> {
+public class ShortFieldProvider extends NumberFieldProvider<Short> {
 
     private final IntegerFieldProvider fieldProvider;
 

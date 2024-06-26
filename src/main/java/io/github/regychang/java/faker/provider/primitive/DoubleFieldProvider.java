@@ -1,11 +1,10 @@
 package io.github.regychang.java.faker.provider.primitive;
 
 import io.github.regychang.java.faker.Options;
-import io.github.regychang.java.faker.RandomBoundary;
 
 import java.lang.reflect.Field;
 
-public class DoubleFieldProvider extends PrimitiveProvider<Double> {
+public class DoubleFieldProvider extends NumberFieldProvider<Double> {
 
     public DoubleFieldProvider(Field field, Options options) {
         super(field, Double.class, options);
@@ -13,11 +12,10 @@ public class DoubleFieldProvider extends PrimitiveProvider<Double> {
 
     @Override
     protected Double provideInternal() {
-        RandomBoundary<Double> boundary = options.getRandomDoubleBoundary();
-        double span = boundary.getEnd() - boundary.getStart();
+        double span = max.doubleValue() - min.doubleValue();
         return span <= 0 ?
-                boundary.getStart() :
-                boundary.getStart() + RANDOM.nextDouble() * span;
+                min :
+                min + RANDOM.nextDouble() * span;
     }
 
     @Override

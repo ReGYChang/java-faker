@@ -4,7 +4,7 @@ import io.github.regychang.java.faker.Options;
 
 import java.lang.reflect.Field;
 
-public class ByteFieldProvider extends PrimitiveProvider<Byte> {
+public class ByteFieldProvider extends NumberFieldProvider<Byte> {
 
     private final IntegerFieldProvider fieldProvider;
 

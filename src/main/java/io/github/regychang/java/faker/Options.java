@@ -33,11 +33,7 @@ public class Options implements Serializable {
 
     private boolean setArrayMapRandomToZero = false;
 
-    private final RandomBoundary<Integer> randomIntegerBoundary = new RandomBoundary<>(0, 100);
-
-    private final RandomBoundary<Float> randomFloatBoundary = new RandomBoundary<>(0f, 100f);
-
-    private final RandomBoundary<Double> randomDoubleBoundary = new RandomBoundary<>(0.0, 100.0);
+    private final RandomBoundary<Integer> randomBoundary = new RandomBoundary<>(0, 100);
 
     private final RandomBoundary<Instant> randomInstantBoundary = new RandomBoundary<>(Instant.MIN, Instant.MAX);
 
@@ -107,21 +103,9 @@ public class Options implements Serializable {
         return this;
     }
 
-    public Options withRandomIntegerBoundaries(int start, int end) {
-        this.randomIntegerBoundary.setStart(start);
-        this.randomIntegerBoundary.setEnd(end);
-        return this;
-    }
-
-    public Options withRandomFloatBoundaries(float start, float end) {
-        this.randomFloatBoundary.setStart(start);
-        this.randomFloatBoundary.setEnd(end);
-        return this;
-    }
-
-    public Options withRandomDoubleBoundaries(double start, double end) {
-        this.randomDoubleBoundary.setStart(start);
-        this.randomDoubleBoundary.setEnd(end);
+    public Options withRandomBoundaries(int start, int end) {
+        this.randomBoundary.setStart(start);
+        this.randomBoundary.setEnd(end);
         return this;
     }
 
@@ -145,5 +129,4 @@ public class Options implements Serializable {
         this.nullProbability = nullProbability;
         return this;
     }
-
 }

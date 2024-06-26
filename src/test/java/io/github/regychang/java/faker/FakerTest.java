@@ -43,7 +43,7 @@ class FakerTest {
     @Test
     @DisplayName("Test random long generation within specified boundaries")
     void testRandomLong() {
-        Options ops = new Options().withRandomIntegerBoundaries(10, 20);
+        Options ops = new Options().withRandomBoundaries(10, 20);
         Faker faker = new Faker();
         IntStream.range(0, 100)
                 .forEach(
@@ -58,14 +58,14 @@ class FakerTest {
     @Test
     @DisplayName("Test random double generation within specified boundaries")
     void testRandomDouble() {
-        Options ops = new Options().withRandomDoubleBoundaries(10.5, 20.5);
+        Options ops = new Options().withRandomBoundaries(10, 20);
         Faker faker = new Faker();
         IntStream.range(0, 100)
                 .forEach(
                         idx -> {
                             double randomDouble = faker.fakeData(Double.class, ops);
                             Assertions.assertTrue(
-                                    randomDouble >= 10.5 && randomDouble <= 20.5,
+                                    randomDouble >= 10 && randomDouble <= 20,
                                     "Generated double should be within specified boundaries");
                         });
     }

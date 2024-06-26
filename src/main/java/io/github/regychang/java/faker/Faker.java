@@ -450,28 +450,28 @@ public class Faker implements Serializable {
     }
 
     public static int randomInteger(Options options) {
-        RandomBoundary<Integer> boundary = options.getRandomIntegerBoundary();
+        RandomBoundary<Integer> boundary = options.getRandomBoundary();
         int span = boundary.getEnd() - boundary.getStart();
         return span <= 0 ?
                 boundary.getStart() : RANDOM.nextInt(span);
     }
 
     public static long randomLong(Options options) {
-        RandomBoundary<Integer> boundary = options.getRandomIntegerBoundary();
+        RandomBoundary<Integer> boundary = options.getRandomBoundary();
         int span = boundary.getEnd() - boundary.getStart();
         return boundary.getStart() + Math.abs(RANDOM.nextLong()) % (span + 1L);
     }
 
 
     public static float randomFloat(Options options) {
-        RandomBoundary<Float> boundary = options.getRandomFloatBoundary();
+        RandomBoundary<Integer> boundary = options.getRandomBoundary();
         float span = boundary.getEnd() - boundary.getStart();
         return span <= 0 ?
                 boundary.getStart() : boundary.getStart() + RANDOM.nextFloat() * span;
     }
 
     public static double randomDouble(Options options) {
-        RandomBoundary<Double> boundary = options.getRandomDoubleBoundary();
+        RandomBoundary<Integer> boundary = options.getRandomBoundary();
         double span = boundary.getEnd() - boundary.getStart();
         return span <= 0 ?
                 boundary.getStart() : boundary.getStart() + RANDOM.nextDouble() * span;

@@ -1,11 +1,10 @@
 package io.github.regychang.java.faker.provider.primitive;
 
 import io.github.regychang.java.faker.Options;
-import io.github.regychang.java.faker.RandomBoundary;
 
 import java.lang.reflect.Field;
 
-public class IntegerFieldProvider extends PrimitiveProvider<Integer> {
+public class IntegerFieldProvider extends NumberFieldProvider<Integer> {
 
     public IntegerFieldProvider(Field field, Options options) {
         super(field, Integer.class, options);
@@ -13,10 +12,10 @@ public class IntegerFieldProvider extends PrimitiveProvider<Integer> {
 
     @Override
     protected Integer provideInternal() {
-        RandomBoundary<Integer> boundary = options.getRandomIntegerBoundary();
-        int span = boundary.getEnd() - boundary.getStart();
+        int span = max - min;
         return span <= 0 ?
-                boundary.getStart() : RANDOM.nextInt(span);
+                min :
+                min + RANDOM.nextInt(span);
     }
 
     @Override
