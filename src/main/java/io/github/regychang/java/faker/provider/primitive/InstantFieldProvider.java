@@ -13,15 +13,27 @@ public class InstantFieldProvider extends PrimitiveProvider<Instant> {
 
     private static final Duration CENTURY = Duration.ofDays(365 * 100);
 
+    private static final int DEFAULT_RECORDS_PER_SECOND = 1000;
+
     private Instant lastTimestamp;
 
     private final double probability;
 
     public InstantFieldProvider(Field field, Options options) {
+        this(field, options, DEFAULT_RECORDS_PER_SECOND);
+    }
+
+    public InstantFieldProvider(Field field, Options options, int recordsPerSecond) {
+        this(field, options, Instant.now(), recordsPerSecond);
+    }
+
+    public InstantFieldProvider(Field field, Options options, Instant lastTimestamp, int recordsPerSecond) {
         super(field, Instant.class, options);
-        this.lastTimestamp = Instant.now();
-        // TODO: dynamically calculate probability
-        this.probability = 1.0 / 1000;
+        if (recordsPerSecond <= 0) {
+            throw new IllegalArgumentException("recordsPerSecond must be greater than 0");
+        }
+        this.probability = 1.0 / recordsPerSecond;
+        this.lastTimestamp = lastTimestamp;
     }
 
     @Override
