@@ -28,8 +28,8 @@ public class StringFieldProvider extends PrimitiveProvider<String> {
 
     @Override
     protected String provideInternal() {
-        return regexPattern != null ?
-                generateWithRegexPattern() : generateRandomString();
+        return regexPattern == null || regexPattern.isEmpty() ?
+                generateRandomString() : generateWithRegexPattern();
     }
 
     @Override

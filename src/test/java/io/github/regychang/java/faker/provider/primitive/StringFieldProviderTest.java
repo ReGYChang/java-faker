@@ -66,6 +66,17 @@ public class StringFieldProviderTest {
     }
 
     @Test
+    public void testGenerateWithEmptyRegexPattern() {
+        when(mockAnnotation.format()).thenReturn("");
+
+        stringFieldProvider = new StringFieldProvider(mockField, mockOptions);
+        String randomString = stringFieldProvider.provide();
+
+        assertNotNull(randomString, "Generated string should not be null");
+        assertFalse(randomString.isEmpty(), "Generated string should not be empty");
+    }
+
+    @Test
     public void testGenerateWithValueList() {
         when(mockAnnotation.values()).thenReturn(new String[]{"a", "b", "c"});
 
