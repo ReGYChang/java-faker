@@ -123,6 +123,9 @@ public class Faker implements Serializable {
         if (clazz.equals(Double.class) || clazz.equals(double.class)) {
             return (FieldProvider<T>) new DoubleFieldProvider(field, options);
         }
+        if (clazz.equals(BigDecimal.class)) {
+            return (FieldProvider<T>) new DoubleFieldProvider(field, options);
+        }
         if (clazz.equals(String.class)) {
             return (FieldProvider<T>) new StringFieldProvider(field, options);
         }
