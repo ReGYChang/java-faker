@@ -6,9 +6,11 @@ import io.github.regychang.java.faker.provider.CustomFieldProvider;
 import io.github.regychang.java.faker.provider.DefaultFieldProvider;
 import io.github.regychang.java.faker.provider.FieldProvider;
 import io.github.regychang.java.faker.provider.MapFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.BigDecimalFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.BooleanFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.ByteFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.CharacterFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.DateFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.DoubleFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.EnumFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.FloatFieldProvider;
@@ -16,6 +18,8 @@ import io.github.regychang.java.faker.provider.GenericFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.InstantFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.IntegerFieldProvider;
 import io.github.regychang.java.faker.provider.collection.ListFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.LocalDateFieldProvider;
+import io.github.regychang.java.faker.provider.primitive.LocalDateTimeFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.LongFieldProvider;
 import io.github.regychang.java.faker.provider.collection.SetFieldProvider;
 import io.github.regychang.java.faker.provider.primitive.ShortFieldProvider;
@@ -27,7 +31,9 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -124,10 +130,19 @@ public class Faker implements Serializable {
             return (FieldProvider<T>) new DoubleFieldProvider(field, options);
         }
         if (clazz.equals(BigDecimal.class)) {
-            return (FieldProvider<T>) new DoubleFieldProvider(field, options);
+            return (FieldProvider<T>) new BigDecimalFieldProvider(field, options);
         }
         if (clazz.equals(String.class)) {
             return (FieldProvider<T>) new StringFieldProvider(field, options);
+        }
+        if (clazz.equals(Date.class)) {
+            return (FieldProvider<T>) new DateFieldProvider(field, options);
+        }
+        if (clazz.equals(LocalDate.class)) {
+            return (FieldProvider<T>) new LocalDateFieldProvider(field, options);
+        }
+        if (clazz.equals(LocalDateTime.class)) {
+            return (FieldProvider<T>) new LocalDateTimeFieldProvider(field, options);
         }
         if (clazz.equals(Instant.class)) {
             return (FieldProvider<T>) new InstantFieldProvider(field, options);

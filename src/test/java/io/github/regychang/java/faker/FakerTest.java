@@ -13,7 +13,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -458,12 +461,21 @@ class FakerTest {
         public List<List<String>> stringListList;
 
         public List<String>[] stringListArray;
+
+        public Date date;
+
+        public LocalDate localDate;
+
+        public LocalDateTime localDateTime;
+
+        public BigDecimal bigDecimal;
     }
 
     @Test
     @DisplayName("Test v2 faker")
     void testV2() {
         Faker faker = new Faker();
+
         SimpleStringClass simpleStringClass = faker.fakeData(SimpleStringClass.class);
 
         Assertions.assertNotNull(simpleStringClass);

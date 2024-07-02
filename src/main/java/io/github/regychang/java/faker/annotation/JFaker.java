@@ -29,7 +29,7 @@ public @interface JFaker {
 
     Feature[] features() default {};
 
-    Class<? extends CustomFieldProvider> provider() default DefaultFieldProvider.class;
+    Class<? extends CustomFieldProvider<?>> provider() default DefaultFieldProvider.class;
 
     enum Feature {
 
